@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String     @id @default(cuid())
+  email          String    @unique                        // Used for email login or verification
+  passwordHash   String                                   // Only set if user used email/password
+  phoneNumber    String?    @unique                        // Optional: for SMS-based login (future)
+  profilePicture          String?
+  isVerified     Boolean    @default(false)               // Used to track if the user has verified their email
+  role           String?     @default("user")               // e.g. user, admin
+  isActive       Boolean    @default(true)                 // Used to soft-disable an account
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  otp            OTP[]
+  posts          Post[]                                    // User's posts
+  comments       Comment[]                                 // User's comments
+
+  accounts       Account[]                                 // Linked OAuth accounts
+  sessions       Session[]                                 // Sessions for token-based auth
+}
+// model Profile{
+//   id String @id @default(cuid())
+//   userId String @unique
+//   user User @relation(fields: [userId], references: [id])
+//   profilePicture String
+//   firstName String?
+//   lastName String?
+
+// }
+
+model OTP {
+  id         String   @id @default(cuid())
+  otp        String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String   @unique
+  expiresAt  DateTime
+  verified   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+
+
+
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider          String                                  // e.g. "google", "twitter", "facebook", "credentials"
+  providerAccountId String                                  // Unique ID from the provider
+  accessToken       String?                                 // Optional: used to access external APIs
+  refreshToken      String?
+  expiresAt         Int?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])                   // Prevent duplicate provider accounts
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken String   @unique
+  expires      DateTime
+}
+
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String                                     // Usually the user's email
+  token      String   @unique
+  expires    DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([identifier])
+  @@index([expires])
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  isPublished Boolean  @default(false)
+  tags        String   @default("") // Comma-separated tags for SQLite compatibility
+  likes       Int      @default(0)
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  comments    Comment[]
+
+  @@index([authorId])
+  @@index([isPublished])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentId  String?  // For nested comments
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([postId])
+  @@index([parentId])
+}

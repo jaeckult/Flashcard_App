@@ -1,0 +1,6 @@
+{
+  "watch": ["*.js", "controllers/", "utils/", "prisma/"],
+  "ext": "js,json",
+  "ignore": ["node_modules/", "*.db", "*.db-journal"],
+  "exec": "node app.js"
+}
