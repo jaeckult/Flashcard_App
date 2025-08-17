@@ -46,33 +46,42 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleGoogleSignIn() async {
-  try {
-    final GoogleSignIn googleSignIn = GoogleSignIn(
-      clientId: '13219207077-krjhrde3jla13jg7qc3m5bd78rq8rqac.apps.googleusercontent.com', // <-- Set your client ID here
-    );
-    // Example using google_sign_in package
-    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-    if (googleUser == null) {
-      // User cancelled the sign-in
-      return;
-    }
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    final String idToken = googleAuth.idToken ?? '';
-
-    if (idToken.isNotEmpty) {
-      // Trigger the bloc event
-      context.read<AuthBloc>().add(GoogleAuthRequested(idToken));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to retrieve Google ID token')),
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: '13219207077-krjhrde3jla13jg7qc3m5bd78rq8rqac.apps.googleusercontent.com', // <-- Set your client ID here
       );
+      
+      // Example using google_sign_in package
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        return;
+      }
+      
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String idToken = googleAuth.idToken ?? '';
+
+      if (idToken.isNotEmpty) {
+        // Check if the widget is still mounted before using context
+        if (mounted) {
+          // Trigger the bloc event
+          context.read<AuthBloc>().add(GoogleAuthRequested(idToken));
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to retrieve Google ID token')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google Sign In failed: $e')),
+        );
+      }
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Google Sign In failed: $e')),
-    );
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +96,9 @@ class _LoginScreenState extends State<LoginScreen> {
           if (state is LoginSuccess) {
             // Navigate to home screen
             context.go('/home');
+          } else if (state is GoogleAuthSuccess) {
+            // Navigate to home screen after Google auth
+            context.go('/home');
           } else if (state is AuthError) {
             // Show error message
             ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-            _isLoading = state is LoginLoading;
+            _isLoading = state is LoginLoading || state is GoogleAuthLoading;
             
             return Padding(
               padding: const EdgeInsets.all(24.0),

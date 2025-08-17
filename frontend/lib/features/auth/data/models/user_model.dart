@@ -29,10 +29,14 @@ class UserModel extends Equatable {
       email: json['email'] as String,
       profilePicture: json['profilePicture'] as String?,
       role: json['role'] as String?,
-      isVerified: json['isVerified'] as bool,
-      isActive: json['isActive'] as bool,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      isVerified: json['isVerified'] as bool? ?? true, // Default to true if not provided
+      isActive: json['isActive'] as bool? ?? true, // Default to true if not provided
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(), // Default to current time if not provided
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.parse(json['updatedAt'] as String)
+          : DateTime.now(), // Default to current time if not provided
       accounts: (json['accounts'] as List<dynamic>?)
           ?.map((account) => AccountModel.fromJson(account as Map<String, dynamic>))
           .toList() ?? [],

@@ -137,14 +137,7 @@ class GoogleSignInButton extends StatelessWidget {
               height: 20,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : Image.asset(
-              'assets/images/google_logo.png',
-              height: 20,
-              width: 20,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.g_mobiledata, size: 20);
-              },
-            ),
+          : const Icon(Icons.g_mobiledata, size: 20),
       label: Text(isLoading ? 'Signing in...' : 'Continue with Google'),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 48),

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user_model.dart';
@@ -27,7 +28,7 @@ class AuthRepository {
 
   // Store user data
   Future<void> _storeUser(UserModel user) async {
-    await _prefs.setString(_userKey, user.toJson().toString());
+    await _prefs.setString(_userKey, jsonEncode(user.toJson()));
   }
 
   // Get stored user
@@ -36,8 +37,8 @@ class AuthRepository {
     if (userData != null) {
       try {
         // Parse the stored user data
-        // Note: This is a simplified version. In a real app, you might want to use proper JSON parsing
-        return null; // Placeholder
+        final jsonData = jsonDecode(userData) as Map<String, dynamic>;
+        return UserModel.fromJson(jsonData);
       } catch (e) {
         return null;
       }

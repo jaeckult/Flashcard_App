@@ -65,8 +65,8 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
         listener: (context, state) {
           if (state is OtpVerificationSuccess) {
             if (state.requiresPassword) {
-              // Navigate to set password screen
-              context.go('/set-password?email=${widget.email}');
+              // Navigate to set password screen with email parameter
+              context.go('/set-password?email=${state.email}');
             } else {
               // User is already verified, navigate to home
               context.go('/home');

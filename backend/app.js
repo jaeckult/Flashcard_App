@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:50677'; 
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:65028'; 
 const SENDGRID_ORIGIN = process.env.SENDGRID_ORIGIN || 'https://api.sendgrid.com';
 app.use(express.json());
 

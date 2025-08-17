@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/repositories/auth_repository.dart';
+import '../../data/models/user_model.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -110,7 +111,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       
       if (response.containsKey('token') && response.containsKey('user')) {
-        final user = response['user'];
+        final user = UserModel.fromJson(response['user']);
         emit(LoginSuccess(
           token: response['token'],
           user: user,
@@ -158,7 +159,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final response = await _authRepository.googleAuth(event.idToken);
       
       if (response.containsKey('token') && response.containsKey('user')) {
-        final user = response['user'];
+        final user = UserModel.fromJson(response['user']);
         emit(GoogleAuthSuccess(
           token: response['token'],
           user: user,
